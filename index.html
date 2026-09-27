@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latihan Drag and Drop</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 30px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .instruction {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        /* Tempat benda */
+        #items {
+            min-height: 130px;
+            border: 2px dashed #bbb;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        /* Benda yang diseret */
+        .item {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 12px 18px;
+            font-size: 18px;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .item:hover {
+            transform: scale(1.05);
+        }
+
+        .item:active {
+            cursor: grabbing;
+        }
+
+        .dragging {
+            opacity: 0.5;
+        }
+
+        /* Kelompok */
+        .groups {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .group {
+            min-height: 180px;
+            border: 3px dashed #aaa;
+            border-radius: 15px;
+            padding: 15px;
+        }
+
+        .group h2 {
+            text-align: center;
+            margin-top: 0;
+        }
+
+        .red {
+            background: #fff0f0;
+        }
+
+        .blue {
+            background: #eef5ff;
+        }
+
+        .placed {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            min-height: 100px;
+        }
+
+        /* Pesan */
+        #feedback {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 25px 0;
+            min-height: 25px;
+        }
+
+        /* Tombol */
+        button {
+            display: block;
+            margin: auto;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            background: #333;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #555;
+        }
+
+        /* Tampilan HP */
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .groups {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🎯 Ayo Kelompokkan!</h1>
+
+    <p class="instruction">
+        Seret setiap benda ke kelompok warna yang sesuai.
+    </p>
+
+    <!-- Tempat benda sebelum dikelompokkan -->
+    <div id="items">
+
+        <div class="item"
+             draggable="true"
+             data-color="merah">
+            🍎 Apel
+        </div>
+
+        <div class="item"
+             draggable="true"
+             data-color="merah">
+            🚗 Mobil
+        </div>
+
+        <div class="item"
+             draggable="true"
+             data-color="biru">
+            🔵 Bola
+        </div>
+
+        <div class="item"
+             draggable="true"
+             data-color="biru">
+            📘 Buku
+        </div>
+
+    </div>
+
+    <!-- Kelompok -->
+    <div class="groups">
+
+        <div class="group red"
+             data-group="merah">
+
+            <h2>🔴 Kelompok Merah</h2>
+
+            <div class="placed"></div>
+
+        </div>
+
+
+        <div class="group blue"
+             data-group="biru">
+
+            <h2>🔵 Kelompok Biru</h2>
+
+            <div class="placed"></div>
+
+        </div>
+
+    </div>
+
+    <!-- Pesan -->
+    <div id="feedback">
+        Mulai dengan menyeret sebuah benda.
+    </div>
+
+    <!-- Tombol ulang -->
+    <button id="reset">
+        🔄 Ulangi
+    </button>
+
+</div>
+
+
+<script>
+
+    // Mengambil semua benda
+    const items = document.querySelectorAll(".item");
+
+    // Mengambil semua kelompok
+    const groups = document.querySelectorAll(".group");
+
+    // Pesan
+    const feedback = document.getElementById("feedback");
+
+    // Benda yang sedang diseret
+    let draggedItem = null;
+
+
+    // ==============================
+    // DRAG START
+    // ==============================
+
+    items.forEach(item => {
+
+        item.addEventListener("dragstart", function() {
+
+            draggedItem = this;
+
+            this.classList.add("dragging");
+
+        });
+
+
+        // DRAG SELESAI
+
+        item.addEventListener("dragend", function() {
+
+            this.classList.remove("dragging");
+
+        });
+
+    });
+
+
+    // ==============================
+    // DRAG OVER
+    // ==============================
+
+    groups.forEach(group => {
+
+        group.addEventListener("dragover", function(event) {
+
+            event.preventDefault();
+
+        });
+
+
+        // ==============================
+        // DROP
+        // ==============================
+
+        group.addEventListener("drop", function(event) {
+
+            event.preventDefault();
+
+            if (!draggedItem) {
+                return;
+            }
+
+
+            // Warna benda
+            const itemColor =
+                draggedItem.dataset.color;
+
+
+            // Warna kelompok
+            const groupColor =
+                this.dataset.group;
+
+
+            // ==============================
+            // JAWABAN BENAR
+            // ==============================
+
+            if (itemColor === groupColor) {
+
+                const placed =
+                    this.querySelector(".placed");
+
+                placed.appendChild(draggedItem);
+
+
+                feedback.textContent =
+                    "✅ Benar! Lanjutkan dengan benda lainnya.";
+
+
+                feedback.style.color = "green";
+
+                cekSelesai();
+
+            }
+
+
+            // ==============================
+            // JAWABAN SALAH
+            // ==============================
+
+            else {
+
+                feedback.textContent =
+                    "❌ Belum tepat. Perhatikan warna benda.";
+
+                feedback.style.color = "red";
+
+            }
+
+
+            draggedItem = null;
+
+        });
+
+    });
+
+
+    // ==============================
+    // CEK SEMUA BENAR
+    // ==============================
+
+    function cekSelesai() {
+
+        const remaining =
+            document.querySelectorAll("#items .item");
+
+
+        if (remaining.length === 0) {
+
+            feedback.textContent =
+                "🎉 Hebat! Semua benda sudah dikelompokkan dengan benar!";
+
+            feedback.style.color = "green";
+
+        }
+
+    }
+
+
+    // ==============================
+    // TOMBOL ULANGI
+    // ==============================
+
+    document.getElementById("reset")
+        .addEventListener("click", function() {
+
+            const itemsArea =
+                document.getElementById("items");
+
+
+            // Mengambil semua benda
+            const allItems =
+                document.querySelectorAll(".item");
+
+
+            // Mengembalikan benda
+            allItems.forEach(item => {
+
+                itemsArea.appendChild(item);
+
+            });
+
+
+            // Pesan awal
+            feedback.textContent =
+                "Mulai dengan menyeret sebuah benda.";
+
+            feedback.style.color = "#333";
+
+        });
+
+</script>
+
+</body>
+</html>
